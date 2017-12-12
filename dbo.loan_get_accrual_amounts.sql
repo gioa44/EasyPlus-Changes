@@ -240,44 +240,24 @@ BEGIN
 	SET @calloff_principal_interest_fraction = @fraction - ROUND(@fraction, 2, 1)
 END
 
-IF @penalty_flags & 0x0001 <> 0 -- ÅÀÃÀÂÀÃÀÝËÄÁÖË ÞÉÒÉÈÀÃ ÈÀÍáÀÆÄ ãÀÒÉÌÉÓ ÃÀÒÉÝáÅÀ
+DECLARE
+	@chargable_principal money = $0;
+
+IF @penalty_flags & 0x0001 <> 0 --ვადაგადაცლებულ ძირითად თანხაზე  ჯარიმის დარიცხვა
+	SET @chargable_principal += @overdue_principal;
+
+IF EXISTS (						--ვადაიან ძირითად თანხაზე  ჯარიმის დარიცხვა
+	SELECT * FROM dbo.LOAN_ATTRIBUTES 
+	WHERE LOAN_ID = @loan_id AND ATTRIB_CODE = 'PenaltyOnPrincipal' AND ATTRIB_VALUE = '1'
+) 
+	SET @chargable_principal += @principal;
+
+IF @chargable_principal > 0 --ვადაგადაცლებულ და/ან ვადიან ძირიზე ჯარიმის დარიცხვა
 BEGIN
-	DECLARE
-		@overdue_principal_19 money
-		
-	IF (@overdue_principal > $0.00) AND (EXISTS (SELECT CODE9 FROM dbo.DEPTS (NOLOCK) WHERE CODE9 IN ('220101710', '220101715'))) -- Invest
-	BEGIN
-		SELECT 
-			TOP 1 @overdue_principal_19 = AMOUNT
-		FROM dbo.LOAN_OPS (NOLOCK) 
-		WHERE LOAN_ID = @loan_id AND OP_TYPE = 218
-		ORDER BY OP_ID DESC
-		
-		IF @overdue_principal_19 IS NOT NULL
-		BEGIN
-			SET @fraction = convert(decimal(28, 15), @overdue_principal_19) * DATEDIFF(dd, @calc_date, @date) * @penalty_intrate / 100 + @overdue_principal_penalty_fraction
-			SET @overdue_principal_penalty_daily = ROUND(@fraction, 2, 1)
-			SET @overdue_principal_penalty = @overdue_principal_penalty + @overdue_principal_penalty_daily
-			SET @overdue_principal_penalty_fraction = @fraction - ROUND(@fraction, 2, 1)
-		END
-	END
-	ELSE
-	BEGIN
-		IF @penalty_delta = 1
-		BEGIN
-			SET @fraction = convert(decimal(28, 15), @overdue_principal) * DATEDIFF(dd, @calc_date, @date) * ABS(@penalty_intrate - (@intrate / @basis)) / 100 + @overdue_principal_penalty_fraction
-			SET @overdue_principal_penalty_daily = ROUND(@fraction, 2, 1)
-			SET @overdue_principal_penalty = @overdue_principal_penalty + @overdue_principal_penalty_daily
-			SET @overdue_principal_penalty_fraction = @fraction - ROUND(@fraction, 2, 1)
-		END
-		ELSE
-		BEGIN
-			SET @fraction = convert(decimal(28, 15), @overdue_principal) * DATEDIFF(dd, @calc_date, @date) * @penalty_intrate / 100 + @overdue_principal_penalty_fraction
-			SET @overdue_principal_penalty_daily = ROUND(@fraction, 2, 1)
-			SET @overdue_principal_penalty = @overdue_principal_penalty + @overdue_principal_penalty_daily
-			SET @overdue_principal_penalty_fraction = @fraction - ROUND(@fraction, 2, 1)
-		END
-	END
+	SET @fraction = CAST(@chargable_principal as decimal(28, 15)) * DATEDIFF(dd, @calc_date, @date) * @penalty_intrate / 100 + @overdue_principal_penalty_fraction
+	SET @overdue_principal_penalty_daily = ROUND(@fraction, 2, 1)
+	SET @overdue_principal_penalty = @overdue_principal_penalty + @overdue_principal_penalty_daily
+	SET @overdue_principal_penalty_fraction = @fraction - ROUND(@fraction, 2, 1)	
 END
 
 IF @penalty_flags & 0x0002 <> 0 -- ÅÀÃÀÂÀÃÀÝÉËÄÁÖË ÐÒÏÝÄÍÔÆÄ ãÀÒÉÌÉÓ ÃÀÒÉÝáÅÀ
@@ -332,3 +312,4 @@ BEGIN
 	SET @writeoff_percent_penalty = @writeoff_percent_penalty + @writeoff_percent_penalty_daily
 	SET @writeoff_percent_penalty_fraction = @fraction - ROUND(@fraction, 2, 1)
 END
+GO
