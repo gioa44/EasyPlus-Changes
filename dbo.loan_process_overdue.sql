@@ -13,12 +13,12 @@ ALTER PROCEDURE dbo.loan_process_overdue
 	@schedule_insurance					money OUTPUT,
 	@schedule_service_fee				money OUTPUT,
 	@schedule_defered_interest			money OUTPUT,
-	@schedule_defered_overdue_interest	money OUTPUT,
+	@schedule_defered_overdue_interest	money = NULL OUTPUT,
 	@nu_interest						money OUTPUT,
 	@interest							money OUTPUT,
 	@principal							money OUTPUT,
 	@deferable_interest					money OUTPUT,
-	@deferable_overdue_interest			money OUTPUT,
+	@deferable_overdue_interest			money = NULL OUTPUT,
 	@overdue_percent					money OUTPUT,
 	@overdue_principal					money OUTPUT,
 	@step_overdue_percent				money OUTPUT,
@@ -28,7 +28,7 @@ ALTER PROCEDURE dbo.loan_process_overdue
 	@step_overdue_insurance				money OUTPUT,
 	@step_overdue_service_fee			money OUTPUT,
 	@step_defered_interest				money OUTPUT,
-	@step_defered_overdue_interest		money OUTPUT,
+	@step_defered_overdue_interest		money = NULL OUTPUT,
 	@op_details							xml OUTPUT
 AS
   
