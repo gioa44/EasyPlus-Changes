@@ -246,12 +246,11 @@ DECLARE
 IF @penalty_flags & 0x0001 <> 0 --ვადაგადაცლებულ ძირითად თანხაზე  ჯარიმის დარიცხვა
 	SET @chargable_principal += @overdue_principal;
 
-IF EXISTS (  --ვადაიან ძირითად თანხაზე  ჯარიმის დარიცხვა თუ სესხი ვადაგადაცილებულია
+IF (@overdue_principal > $0 OR @overdue_percent > $0) AND EXISTS (  --ვადაიან ძირითად თანხაზე  ჯარიმის დარიცხვა თუ სესხი ვადაგადაცილებულია
 	SELECT * 
-	FROM dbo.LOANS l
-		INNER JOIN dbo.LOAN_ATTRIBUTES a ON a.LOAN_ID = l.LOAN_ID
-			AND a.ATTRIB_CODE = 'PenaltyOnPrincipal' AND a.ATTRIB_VALUE = '1'
-	WHERE l.LOAN_ID = @loan_id AND l.[STATE] = 60 -- dbo.loan_const_state_overdued()
+	FROM dbo.LOAN_ATTRIBUTES a 
+	WHERE a.LOAN_ID = @loan_id
+			AND a.ATTRIB_CODE = 'PenaltyOnPrincipal' AND a.ATTRIB_VALUE = '1'	
 ) 
 BEGIN
 	SET @chargable_principal += @principal;

@@ -12,6 +12,9 @@ BEGIN
 		WHERE l.LOAN_ID = @loan_id 
 	)
 	BEGIN
+		DELETE FROM dbo.LOAN_ATTRIBUTES 
+		WHERE LOAN_ID = @loan_id AND ATTRIB_CODE = 'PenaltyOnPrincipal'
+
 		INSERT INTO dbo.LOAN_ATTRIBUTES ( LOAN_ID, ATTRIB_CODE, ATTRIB_VALUE )
 		VALUES ( @loan_id, 'PenaltyOnPrincipal', '1' )
 	END
