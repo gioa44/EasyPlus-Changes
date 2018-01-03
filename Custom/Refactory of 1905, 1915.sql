@@ -98,7 +98,7 @@ SET ACCOUNT_BAL_ACC = 1912
 
 -- TODO. gioa - @date-ის მნიშვნელობა უნდა დაყენდეს მისი კომენტარის შესაბამისად
 DECLARE
-	@date datetime = '2017-09-23', -- gioa. ამ თარიღის ნაშთი უნდა გადავიტანოთ, ამ თარიღისვე DOC_DATE-ით. ამ თარიღის მერე ანგარიშზე ბრუნვა არ უნდა არსებობდეს ( SELECT MAX(o.DOC_DATE) FROM dbo.OPS_0000 o )
+	@date datetime = '2018-01-02', -- gioa. ამ თარიღის ნაშთი უნდა გადავიტანოთ, ამ თარიღისვე DOC_DATE-ით. ამ თარიღის მერე ანგარიშზე ბრუნვა არ უნდა არსებობდეს ( SELECT MAX(o.DOC_DATE) FROM dbo.OPS_0000 o )
 	@loan_id int,
 	@balance_on_old_19_acc money,
 	@message nvarchar(300)
@@ -151,7 +151,7 @@ BEGIN
 	    	CONTINUE;
 	    END
 	    
-	    DELETE FROM dbo.LOAN_ACCOUNTS WHERE LOAN_ID = @loan_id
+	    DELETE FROM dbo.LOAN_ACCOUNTS WHERE LOAN_ID = @loan_id AND ACCOUNT_TYPE = 40
 	    
 	    DECLARE 
 	    	@new_19_acc_id INT,
@@ -226,7 +226,7 @@ BEGIN
 	    
 	    UPDATE ACCOUNTS 
 	    SET 
-	    	REC_STATE=2,
+	    	REC_STATE=16,
 	    	DATE_CLOSE=GETDATE(),
 	    	UID=UID+1
 	    WHERE ACC_ID=@old_19_acc_id
@@ -253,15 +253,15 @@ DEALLOCATE cur1
 
 GO
 --SELECT * FROM dbo.ACC_ATTRIBUTES aa WHERE aa.ATTRIB_CODE LIKE '%ACCOUNT%'
-SELECT * FROM dbo.OPS_0000 o 
-WHERE 
-	o.DEBIT_ID IN (
-		SELECT aa.ACC_ID FROM dbo.ACC_ATTRIBUTES aa WHERE aa.ATTRIB_CODE LIKE '%ACCOUNT%'
-	)
-	OR 
-	o.CREDIT_ID IN (
-		SELECT aa.ACC_ID FROM dbo.ACC_ATTRIBUTES aa WHERE aa.ATTRIB_CODE LIKE '%ACCOUNT%'
-	)
+--SELECT * FROM dbo.OPS_0000 o 
+--WHERE 
+--	o.DEBIT_ID IN (
+--		SELECT aa.ACC_ID FROM dbo.ACC_ATTRIBUTES aa WHERE aa.ATTRIB_CODE LIKE '%ACCOUNT%'
+--	)
+--	OR 
+--	o.CREDIT_ID IN (
+--		SELECT aa.ACC_ID FROM dbo.ACC_ATTRIBUTES aa WHERE aa.ATTRIB_CODE LIKE '%ACCOUNT%'
+--	)
 
 
 --ROLLBACK TRANSACTION -- gioa. temp

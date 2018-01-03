@@ -16,7 +16,7 @@ GO
 
 
 DECLARE
-	@date datetime = '2017-09-24'
+	@date datetime = '2018-01-02'
 
 DECLARE
 	@bal_acc_list table (old_bal_acc TBAL_ACC, new_bal_acc TBAL_ACC)
@@ -177,22 +177,22 @@ BEGIN
 
 		/*{ ძველი ანგარიშის დახურვა*/
 	    	
-	 --   INSERT INTO dbo.ACC_CHANGES (ACC_ID,USER_ID,DESCRIP) 
-		--VALUES (@old_acc_id ,2,'MNL17 - ÀÍÂÀÒÉÛÉÓ ÛÄÝÅËÀ : REC_STATE DATE_CLOSE UID')
+	    INSERT INTO dbo.ACC_CHANGES (ACC_ID,USER_ID,DESCRIP) 
+		VALUES (@old_acc_id ,2,'MNL17 - ÀÍÂÀÒÉÛÉÓ ÛÄÝÅËÀ : REC_STATE DATE_CLOSE UID')
 	    
-	 --   SET @rec_id=SCOPE_IDENTITY()
+	    SET @rec_id=SCOPE_IDENTITY()
 	    
-	 --   INSERT INTO dbo.ACCOUNTS_ARC 
-	 --   	SELECT @rec_id,* 
-	 --   	FROM ACCOUNTS 
-	 --   	WHERE ACC_ID=@old_acc_id
+	    INSERT INTO dbo.ACCOUNTS_ARC 
+	    	SELECT @rec_id,* 
+	    	FROM ACCOUNTS 
+	    	WHERE ACC_ID=@old_acc_id
 	    
-	 --   UPDATE ACCOUNTS 
-	 --   SET 
-	 --   	REC_STATE=2,
-	 --   	DATE_CLOSE=GETDATE(),
-	 --   	UID=UID+1
-	 --   WHERE ACC_ID=@old_acc_id
+	    UPDATE ACCOUNTS 
+	    SET 
+	    	REC_STATE=16,
+	    	DATE_CLOSE=GETDATE(),
+	    	UID=UID+1
+	    WHERE ACC_ID=@old_acc_id
 
 		/*} ძველი ანგარიშის დახურვა*/
 	    
