@@ -144,43 +144,35 @@ SET @category_4 = $0.00
 SET @category_5 = $0.00
 SET @category_6 = $0.00
 
-IF @product_id IN (7, 14)
+IF @overdue_days <= 0
 BEGIN
 	SET @category_1 = @loan_amount
 	SET @max_category_level = 1
 END
-ELSE
+
+IF @overdue_days > 0 AND @overdue_days <= 60
 BEGIN
-	IF @overdue_days <= 0
-	BEGIN
-		SET @category_1 = @loan_amount
-		SET @max_category_level = 1
-	END
+	SET @category_2 = @loan_amount
+	SET @max_category_level = 2
+END;
 
-	IF @overdue_days > 0 AND @overdue_days <= 60
-	BEGIN
-		SET @category_2 = @loan_amount
-		SET @max_category_level = 2
-	END;
+IF @overdue_days > 60 AND @overdue_days <= 160
+BEGIN
+	SET @category_3 = @loan_amount
+	SET @max_category_level = 3
+END;
 
-	IF @overdue_days > 60 AND @overdue_days <= 160
-	BEGIN
-		SET @category_3 = @loan_amount
-		SET @max_category_level = 3
-	END;
+IF @overdue_days > 160 AND @overdue_days <= 250
+BEGIN
+	SET @category_4 = @loan_amount
+	SET @max_category_level = 4
+END;
 
-	IF @overdue_days > 160 AND @overdue_days <= 250
-	BEGIN
-		SET @category_4 = @loan_amount
-		SET @max_category_level = 4
-	END;
-
-	IF @overdue_days > 250
-	BEGIN
-		SET @category_5 = @loan_amount
-		SET @max_category_level = 5
-	END;
-END
+IF @overdue_days > 250
+BEGIN
+	SET @category_5 = @loan_amount
+	SET @max_category_level = 5
+END;
 
 IF (@non_auto_calc IS NOT NULL) AND (@non_auto_calc = 0) AND (@max_category_level < @max_category_level_auto)
 BEGIN
