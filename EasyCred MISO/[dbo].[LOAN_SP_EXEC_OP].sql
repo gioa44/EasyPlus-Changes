@@ -227,6 +227,11 @@ BEGIN
 	IF @e <> 0 BEGIN RAISERROR ('ÛÄÝÃÏÌÀ.',16,1) RETURN(1) END
 	IF @r = 0 BEGIN RAISERROR('RECORD NOT FOUND',16,1) RETURN(1) END
 	
+	EXEC easy.on_user_after_op_approval
+		@loan_id = @loan_id,
+		@op_id = @op_id,
+	    @user_id = @user_id
+
 	EXEC easy.effr_CreateEffectiveRate
 		@loan_id = @loan_id,
 		@op_id = @op_id,

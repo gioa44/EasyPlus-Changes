@@ -188,22 +188,28 @@ BEGIN
 	SET @calloff_principal_interest_fraction = @fraction - ROUND(@fraction, 2, 1)
 END
 
-IF @penalty_flags & 0x0001 <> 0 -- ÅÀÃÀÂÀÃÀÝËÄÁÖË ÞÉÒÉÈÀÃ ÈÀÍáÀÆÄ  ãÀÒÉÌÉÓ ÃÀÒÉÝáÅÀ
+DECLARE
+	@chargable_principal money = $0;
+
+IF @penalty_flags & 0x0001 <> 0 --ვადაგადაცლებულ ძირითად თანხაზე  ჯარიმის დარიცხვა
+	SET @chargable_principal += @overdue_principal;
+
+IF (@overdue_principal > $0 OR @overdue_percent > $0) AND EXISTS (  --ვადაიან ძირითად თანხაზე  ჯარიმის დარიცხვა თუ სესხი ვადაგადაცილებულია
+	SELECT * 
+	FROM dbo.LOAN_ATTRIBUTES a 
+	WHERE a.LOAN_ID = @loan_id
+			AND a.ATTRIB_CODE = 'PenaltyOnPrincipal' AND a.ATTRIB_VALUE = '1'	
+) 
 BEGIN
-	IF @penalty_delta = 1
-	BEGIN
-		SET @fraction = convert(decimal(28, 15), @overdue_principal) * DATEDIFF(dd, @calc_date, @date) * ABS(@penalty_intrate - (@intrate / @basis)) / 100 + @overdue_principal_penalty_fraction
-		SET @overdue_principal_penalty_daily = ROUND(@fraction, 2, 1)
-		SET @overdue_principal_penalty = @overdue_principal_penalty + @overdue_principal_penalty_daily
-		SET @overdue_principal_penalty_fraction = @fraction - ROUND(@fraction, 2, 1)
-	END
-	ELSE
-	BEGIN
-		SET @fraction = convert(decimal(28, 15), @overdue_principal) * DATEDIFF(dd, @calc_date, @date) * @penalty_intrate / 100 + @overdue_principal_penalty_fraction
-		SET @overdue_principal_penalty_daily = ROUND(@fraction, 2, 1)
-		SET @overdue_principal_penalty = @overdue_principal_penalty + @overdue_principal_penalty_daily
-		SET @overdue_principal_penalty_fraction = @fraction - ROUND(@fraction, 2, 1)
-	END
+	SET @chargable_principal += @principal;
+END
+
+IF @chargable_principal > 0 --ვადაგადაცლებულ და/ან ვადიან ძირიზე ჯარიმის დარიცხვა
+BEGIN
+	SET @fraction = CAST(@chargable_principal as decimal(28, 15)) * DATEDIFF(dd, @calc_date, @date) * @penalty_intrate / 100 + @overdue_principal_penalty_fraction
+	SET @overdue_principal_penalty_daily = ROUND(@fraction, 2, 1)
+	SET @overdue_principal_penalty = @overdue_principal_penalty + @overdue_principal_penalty_daily
+	SET @overdue_principal_penalty_fraction = @fraction - ROUND(@fraction, 2, 1)	
 END
 
 IF @penalty_flags & 0x0002 <> 0 -- ÅÀÃÀÂÀÃÀÝÉËÄÁÖË ÐÒÏÝÄÍÔÆÄ ãÀÒÉÌÉÓ ÃÀÒÉÝáÅÀ
